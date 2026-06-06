@@ -7,6 +7,8 @@ from mem0 import Memory
 from pydantic import BaseModel
 
 _API_KEY = os.environ["MEM0_API_KEY"]
+_ZAI_API_KEY = os.environ["ZAI_API_KEY"]
+_ZAI_BASE_URL = "https://api.z.ai/api/coding/paas/v4"
 
 _config = {
     "vector_store": {
@@ -15,21 +17,23 @@ _config = {
             "collection_name": "mem0",
             "host": os.environ.get("QDRANT_HOST", "qdrant"),
             "port": int(os.environ.get("QDRANT_PORT", 6333)),
-            "embedding_model_dims": 1536,
+            "embedding_model_dims": 2048,
         },
     },
     "llm": {
         "provider": "openai",
         "config": {
-            "model": "gpt-4o-mini",
-            "api_key": os.environ["OPENAI_API_KEY"],
+            "model": "glm-4-flash",
+            "api_key": _ZAI_API_KEY,
+            "openai_base_url": _ZAI_BASE_URL,
         },
     },
     "embedder": {
         "provider": "openai",
         "config": {
-            "model": "text-embedding-3-small",
-            "api_key": os.environ["OPENAI_API_KEY"],
+            "model": "embedding-3",
+            "api_key": _ZAI_API_KEY,
+            "openai_base_url": _ZAI_BASE_URL,
         },
     },
 }
