@@ -10,18 +10,35 @@ services:
       - mem0-internal
     restart: unless-stopped
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: mem0-ollama
+    volumes:
+      - ollama-models:/root/.ollama
+    networks:
+      - mem0-internal
+    # Pull both models on start — no-op if already cached in the volume
+    command: >-
+      sh -c "ollama serve & sleep 5 &&
+      ollama pull gemma2:2b &&
+      ollama pull nomic-embed-text &&
+      wait"
+    restart: unless-stopped
+
   mem0-api:
     build: ./api
     container_name: mem0-api
     ports:
       - "127.0.0.1:8100:8000"
     environment:
-      - ZAI_API_KEY=${ZAI_API_KEY}
+      - MEM0_API_KEY=${MEM0_API_KEY}
       - QDRANT_HOST=qdrant
       - QDRANT_PORT=6333
-      - MEM0_API_KEY=${MEM0_API_KEY}
+      - OLLAMA_HOST=ollama
+      - OLLAMA_PORT=11434
     depends_on:
       - qdrant
+      - ollama
     networks:
       - mem0-internal
       - shared-services
@@ -29,6 +46,7 @@ services:
 
 volumes:
   qdrant-data:
+  ollama-models:
 
 networks:
   mem0-internal:

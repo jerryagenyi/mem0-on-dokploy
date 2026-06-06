@@ -8,17 +8,21 @@ Standalone Mem0 memory API deployed on the `ja` VPS via Dokploy. Provides persis
 |---|---|---|
 | `mem0-api` | Custom Python 3.12 | FastAPI wrapper around `mem0ai` |
 | `mem0-qdrant` | `qdrant/qdrant` | Vector store (private, not host-exposed) |
+| `mem0-ollama` | `ollama/ollama` | Local LLM + embeddings (no external API) |
 
-**LLM:** GLM via z.ai (`glm-4-flash`) — memory extraction  
-**Embeddings:** GLM via z.ai (`embedding-3`, 2048 dims) — semantic search  
+**LLM:** `gemma2:2b` via Ollama — memory extraction  
+**Embeddings:** `nomic-embed-text` via Ollama — semantic search (768 dims)  
 **Port:** `127.0.0.1:8100` on `ja` (Tailscale-only, not publicly exposed)
+
+> **First startup:** Ollama downloads both models (~1.9 GB total) into a persistent volume. This takes a few minutes. Every restart after that is fast — models are cached.
 
 ## Environment variables
 
 | Variable | Purpose |
 |---|---|
-| `ZAI_API_KEY` | Z.AI API key for LLM + embeddings |
 | `MEM0_API_KEY` | Shared secret — agents send as `X-Api-Key` header |
+
+No external API keys required. Fully self-contained.
 
 Copy `.env.example` to `.env` for local use. In Dokploy, set these in the project's Environment Variables section.
 
