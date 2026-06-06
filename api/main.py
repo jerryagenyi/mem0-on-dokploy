@@ -78,12 +78,12 @@ def add_memory(req: AddRequest):
 # matches the literal path before the parameterised one.
 @app.get("/memories/search", dependencies=[Depends(_auth)])
 def search(query: str, agent_id: str, limit: int = 10):
-    return memory.search(query, agent_id=agent_id, limit=limit)
+    return memory.search(query, filters={"agent_id": agent_id}, limit=limit)
 
 
 @app.get("/memories/{agent_id}", dependencies=[Depends(_auth)])
 def get_all(agent_id: str):
-    return memory.get_all(agent_id=agent_id)
+    return memory.get_all(filters={"agent_id": agent_id})
 
 
 @app.delete("/memories/{memory_id}", dependencies=[Depends(_auth)])
