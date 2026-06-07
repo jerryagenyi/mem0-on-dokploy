@@ -37,28 +37,42 @@ curl -s -X POST http://localhost:8100/memories \
 curl -s "http://localhost:8100/memories/{AGENT_ID}" \
   -H "X-Api-Key: Z0AF4wpH9XwsvvBUHqc9lATzTg7ntDv559KlNLKRH4Q"
 
+# Delete a specific memory
+curl -s -X DELETE http://localhost:8100/memories/{MEMORY_ID} \
+  -H "X-Api-Key: Z0AF4wpH9XwsvvBUHqc9lATzTg7ntDv559KlNLKRH4Q"
+
 WHAT TO SAVE: user preferences, decisions, corrections, recurring tasks, anything
 the user says to remember.
 
 WHAT NOT TO SAVE: every message, transient task state, things already in your
 system prompt.
+
+MEMORY FORMAT RULES (non-negotiable):
+- One fact per entry, ≤15 words. Format: subject → fact.
+- Examples: "SSH port: kali is 82" / "Preference: no trailing summaries"
+- Save: stable facts, preferences, decisions, corrections.
+- Never save: task state, session context, explanations, stale/time-bound info.
+- Before saving: Is this stable? Does it duplicate an existing entry? Update instead of adding.
 ```
 
 ---
 
 ## For Forge (Kali) — requires SSH tunnel first
 
-Before Forge can reach the mem0 API, set up a tunnel from Kali to ja:
+Before Forge can reach the mem0 API, set up a persistent tunnel from Kali to ja.
+Add this to `~/.ssh/config` on Kali under the `Host ja` entry:
+
+```
+LocalForward 8100 localhost:8100
+```
+
+Or run once in the background:
 
 ```bash
-# Add to ~/.ssh/config on Kali under the ja Host entry:
-LocalForward 8100 localhost:8100
-
-# Or run once in background:
 ssh -N -L 8100:localhost:8100 ja &
 ```
 
-Once the tunnel is up, Forge uses the **same prompt as VPS agents** above with `agent_id: forge` and the same `localhost:8100` URL.
+Once the tunnel is up, Forge uses the **same prompt block as VPS agents** above with `agent_id: forge` and the same `localhost:8100` URL.
 
 ---
 
@@ -74,15 +88,6 @@ Once the tunnel is up, Forge uses the **same prompt as VPS agents** above with `
 
 Auth: all endpoints except `/health` require `X-Api-Key` header.
 
----
-
-## Memory discipline (include this in every agent prompt)
-
-```
-MEMORY FORMAT RULES (non-negotiable):
-- One fact per entry, ≤15 words. Format: subject → fact.
-- Examples: "SSH port: kali is 82" / "Preference: no trailing summaries"
-- Save: stable facts, preferences, decisions, corrections.
-- Never save: task state, session context, explanations, stale/time-bound info.
-- Before saving: Is this stable? Does it duplicate an existing entry? Update instead of adding.
-```
+Note: `POST /memories` uses AI (local Ollama/gemma2:2b) to extract what's worth
+remembering from the content before storing. Allow 10–20 seconds per call.
+Search uses local embeddings (nomic-embed-text) and is near-instant.
