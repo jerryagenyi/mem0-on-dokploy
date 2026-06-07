@@ -42,6 +42,21 @@ memory: Memory | None = None
 
 _MODELS = ["nomic-embed-text"]
 
+# Custom extraction prompt — enforces terse "subject → fact" format (≤15 words)
+_EXTRACTION_PROMPT = """
+Extract only stable, long-term facts from the input worth remembering across conversations.
+
+Rules (NON-NEGOTIABLE):
+- Extract 1 to 3 facts maximum
+- Each fact must be ≤15 words
+- Format: "Subject → fact"
+- Examples: "SSH port → kali runs on port 82", "Preference → prefers British English spellings"
+- Save only: stable preferences, decisions, corrections, system facts
+- Skip: task state, session context, time-bound info, anything that will be stale soon
+
+Return ONLY the formatted facts, one per line. No explanations, no extra text.
+"""
+
 
 async def _ensure_models() -> None:
     """Pull Ollama models via REST API if not already cached."""
@@ -92,7 +107,7 @@ def health():
 
 @app.post("/memories", dependencies=[Depends(_auth)])
 def add_memory(req: AddRequest):
-    return memory.add(req.content, agent_id=req.agent_id)
+    return memory.add(req.content, agent_id=req.agent_id, prompt=_EXTRACTION_PROMPT)
 
 
 # /memories/search must be defined before /memories/{agent_id} so FastAPI

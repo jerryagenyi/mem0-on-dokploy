@@ -23,7 +23,7 @@ services:
     build: ./api
     container_name: mem0-api
     ports:
-      - "127.0.0.1:8100:8000"
+      - "100.123.6.36:8100:8000"
     environment:
       - MEM0_API_KEY=${MEM0_API_KEY}
       - ZAI_API_KEY=${ZAI_API_KEY}

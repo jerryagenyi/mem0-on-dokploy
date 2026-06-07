@@ -57,22 +57,56 @@ MEMORY FORMAT RULES (non-negotiable):
 
 ---
 
-## For Forge (Kali) — requires SSH tunnel first
-
-Before Forge can reach the mem0 API, set up a persistent tunnel from Kali to ja.
-Add this to `~/.ssh/config` on Kali under the `Host ja` entry:
+## For Forge (Kali) — direct via Tailscale, no tunnel needed
 
 ```
-LocalForward 8100 localhost:8100
+## Persistent Memory
+
+You have a persistent memory API. Use it to remember things across conversations.
+
+Endpoint:  http://100.123.6.36:8100
+Auth:      X-Api-Key: Z0AF4wpH9XwsvvBUHqc9lATzTg7ntDv559KlNLKRH4Q
+agent_id:  forge
+
+WHEN TO USE:
+- Start of every conversation: search for relevant context before responding
+- When the user tells you a preference, fact, or decision: save it immediately
+- After completing a task: save what was done and key outcomes
+- When the user says "remember this": save it
+
+HOW TO CALL:
+
+# Search before responding
+curl -s "http://100.123.6.36:8100/memories/search?query=QUERY&agent_id=forge&limit=5" \
+  -H "X-Api-Key: Z0AF4wpH9XwsvvBUHqc9lATzTg7ntDv559KlNLKRH4Q"
+
+# Save something
+curl -s -X POST http://100.123.6.36:8100/memories \
+  -H "X-Api-Key: Z0AF4wpH9XwsvvBUHqc9lATzTg7ntDv559KlNLKRH4Q" \
+  -H "Content-Type: application/json" \
+  -d '{"content": "WHAT YOU LEARNED", "agent_id": "forge"}'
+
+# Get all your memories
+curl -s "http://100.123.6.36:8100/memories/forge" \
+  -H "X-Api-Key: Z0AF4wpH9XwsvvBUHqc9lATzTg7ntDv559KlNLKRH4Q"
+
+# Delete a specific memory
+curl -s -X DELETE http://100.123.6.36:8100/memories/{MEMORY_ID} \
+  -H "X-Api-Key: Z0AF4wpH9XwsvvBUHqc9lATzTg7ntDv559KlNLKRH4Q"
+
+WHAT TO SAVE: user preferences, decisions, corrections, recurring tasks, anything
+the user says to remember.
+
+WHAT NOT TO SAVE: every message, transient task state, things already in your
+system prompt.
+
+MEMORY FORMAT RULES (non-negotiable):
+- One fact per entry, ≤15 words. Format: subject → fact.
+- Examples: "SSH port: kali is 82" / "Preference: no trailing summaries"
+- Save: stable facts, preferences, decisions, corrections.
+- Never save: task state, session context, explanations, stale/time-bound info.
+- Before saving: Is this stable? Does it duplicate an existing entry? Update instead of adding.
 ```
-
-Or run once in the background:
-
-```bash
-ssh -N -L 8100:localhost:8100 ja &
-```
-
-Once the tunnel is up, Forge uses the **same prompt block as VPS agents** above with `agent_id: forge` and the same `localhost:8100` URL.
 
 ---
 
