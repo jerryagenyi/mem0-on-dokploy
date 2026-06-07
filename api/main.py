@@ -2,6 +2,7 @@ import asyncio
 import os
 from contextlib import asynccontextmanager
 
+import httpx
 from fastapi import Depends, FastAPI, Header, HTTPException
 from mem0 import Memory
 from pydantic import BaseModel
@@ -37,17 +38,34 @@ _config = {
 
 memory: Memory | None = None
 
+_MODELS = ["gemma2:2b", "nomic-embed-text"]
+
+
+async def _ensure_models() -> None:
+    """Pull Ollama models via REST API if not already cached."""
+    async with httpx.AsyncClient(timeout=600) as client:
+        resp = await client.get(f"{_OLLAMA_BASE_URL}/api/tags")
+        cached = {m.get("name", "") for m in resp.json().get("models", [])}
+        for model in _MODELS:
+            if not any(c.startswith(model.split(":")[0]) for c in cached):
+                async with client.stream(
+                    "POST", f"{_OLLAMA_BASE_URL}/api/pull", json={"name": model}
+                ) as r:
+                    async for _ in r.aiter_lines():
+                        pass  # drain stream, model downloads in background
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global memory
     for attempt in range(60):
         try:
+            await _ensure_models()
             memory = Memory.from_config(_config)
             break
         except Exception as exc:
             if attempt == 59:
-                raise RuntimeError(f"Ollama/Qdrant unavailable after 60 retries: {exc}") from exc
+                raise RuntimeError(f"Startup failed after 60 retries: {exc}") from exc
             await asyncio.sleep(5)
     yield
 

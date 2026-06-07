@@ -17,9 +17,6 @@ services:
       - ollama-models:/root/.ollama
     networks:
       - mem0-internal
-    # Override entrypoint so we can start serve and pull models in one shell
-    entrypoint: ["/bin/sh", "-c"]
-    command: "/bin/ollama serve & sleep 5 && /bin/ollama pull gemma2:2b && /bin/ollama pull nomic-embed-text && wait"
     restart: unless-stopped
 
   mem0-api:
