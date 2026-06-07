@@ -10,7 +10,7 @@ Standalone Mem0 memory API deployed on the `ja` VPS via Dokploy. Provides persis
 | `mem0-qdrant` | `qdrant/qdrant` | Vector store (private, not host-exposed) |
 | `mem0-ollama` | `ollama/ollama` | Local LLM + embeddings (no external API) |
 
-**LLM:** `gemma2:2b` via Ollama — memory extraction  
+**LLM:** `glm-5` via z.ai — memory extraction  
 **Embeddings:** `nomic-embed-text` via Ollama — semantic search (768 dims)  
 **Port:** `127.0.0.1:8100` on `ja` (Tailscale-only, not publicly exposed)
 

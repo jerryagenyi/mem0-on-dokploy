@@ -88,6 +88,6 @@ Once the tunnel is up, Forge uses the **same prompt block as VPS agents** above 
 
 Auth: all endpoints except `/health` require `X-Api-Key` header.
 
-Note: `POST /memories` uses GLM (glm-4-flash via z.ai) to extract what's worth
+Note: `POST /memories` uses GLM (glm-5 via z.ai) to extract what's worth
 remembering — typically 1–3 seconds. Search uses local embeddings (nomic-embed-text)
 and is near-instant.

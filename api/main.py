@@ -24,7 +24,7 @@ _config = {
     "llm": {
         "provider": "openai",
         "config": {
-            "model": "glm-4-flash",
+            "model": "glm-5",
             "api_key": os.environ["ZAI_API_KEY"],
             "openai_base_url": _ZAI_BASE_URL,
         },
