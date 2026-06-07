@@ -9,6 +9,7 @@ from pydantic import BaseModel
 
 _API_KEY = os.environ["MEM0_API_KEY"]
 _OLLAMA_BASE_URL = f"http://{os.environ.get('OLLAMA_HOST', 'ollama')}:{os.environ.get('OLLAMA_PORT', '11434')}"
+_ZAI_BASE_URL = "https://api.z.ai/api/coding/paas/v4"
 
 _config = {
     "vector_store": {
@@ -21,10 +22,11 @@ _config = {
         },
     },
     "llm": {
-        "provider": "ollama",
+        "provider": "openai",
         "config": {
-            "model": "gemma2:2b",
-            "ollama_base_url": _OLLAMA_BASE_URL,
+            "model": "glm-4-flash",
+            "api_key": os.environ["ZAI_API_KEY"],
+            "openai_base_url": _ZAI_BASE_URL,
         },
     },
     "embedder": {
@@ -38,7 +40,7 @@ _config = {
 
 memory: Memory | None = None
 
-_MODELS = ["gemma2:2b", "nomic-embed-text"]
+_MODELS = ["nomic-embed-text"]
 
 
 async def _ensure_models() -> None:
