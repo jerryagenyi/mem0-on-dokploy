@@ -42,20 +42,6 @@ memory: Memory | None = None
 
 _MODELS = ["nomic-embed-text"]
 
-# Custom extraction prompt — enforces terse "subject → fact" format (≤15 words).
-# Must return {"facts": [...]} JSON — mem0 parses this format internally.
-_EXTRACTION_PROMPT = """Extract only stable, long-term facts from the input worth remembering across conversations.
-
-Rules (NON-NEGOTIABLE):
-- Extract 1 to 3 facts maximum
-- Each fact must be ≤15 words, in "Subject → fact" format
-- Examples: "Preference → prefers British English spellings", "SSH port → kali runs on port 82"
-- Save only: stable preferences, decisions, corrections, system config
-- Skip: task state, session context, time-bound info, anything stale within days
-
-Return ONLY valid JSON in this exact format:
-{"facts": ["Subject → fact1", "Subject → fact2"]}
-If nothing is worth remembering, return: {"facts": []}"""
 
 
 async def _ensure_models() -> None:
@@ -107,7 +93,7 @@ def health():
 
 @app.post("/memories", dependencies=[Depends(_auth)])
 def add_memory(req: AddRequest):
-    return memory.add(req.content, agent_id=req.agent_id, prompt=_EXTRACTION_PROMPT)
+    return memory.add(req.content, agent_id=req.agent_id)
 
 
 # /memories/search must be defined before /memories/{agent_id} so FastAPI

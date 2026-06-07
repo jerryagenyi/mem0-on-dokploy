@@ -48,10 +48,12 @@ WHAT NOT TO SAVE: every message, transient task state, things already in your
 system prompt.
 
 MEMORY FORMAT RULES (non-negotiable):
-- One fact per entry, ≤15 words. Format: subject → fact.
-- Examples: "SSH port: kali is 82" / "Preference: no trailing summaries"
-- Save: stable facts, preferences, decisions, corrections.
-- Never save: task state, session context, explanations, stale/time-bound info.
+- Send pre-formatted content to the API — do NOT send raw paragraphs or conversation excerpts
+- Format your content as: "Subject → fact" before calling POST /memories
+- One fact per API call. Max 15 words.
+- Examples: "Preference → prefers British English spellings" / "SSH port → kali runs on port 82"
+- Save: stable preferences, decisions, corrections, system facts
+- Never save: task state, session context, explanations, stale/time-bound info
 - Before saving: Is this stable? Does it duplicate an existing entry? Update instead of adding.
 ```
 
@@ -101,10 +103,12 @@ WHAT NOT TO SAVE: every message, transient task state, things already in your
 system prompt.
 
 MEMORY FORMAT RULES (non-negotiable):
-- One fact per entry, ≤15 words. Format: subject → fact.
-- Examples: "SSH port: kali is 82" / "Preference: no trailing summaries"
-- Save: stable facts, preferences, decisions, corrections.
-- Never save: task state, session context, explanations, stale/time-bound info.
+- Send pre-formatted content to the API — do NOT send raw paragraphs or conversation excerpts
+- Format your content as: "Subject → fact" before calling POST /memories
+- One fact per API call. Max 15 words.
+- Examples: "Preference → prefers British English spellings" / "SSH port → kali runs on port 82"
+- Save: stable preferences, decisions, corrections, system facts
+- Never save: task state, session context, explanations, stale/time-bound info
 - Before saving: Is this stable? Does it duplicate an existing entry? Update instead of adding.
 ```
 
