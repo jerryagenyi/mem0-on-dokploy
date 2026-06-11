@@ -1,5 +1,4 @@
 name: mem0
-
 services:
   qdrant:
     image: qdrant/qdrant:latest
@@ -9,12 +8,11 @@ services:
     networks:
       - mem0-internal
     restart: unless-stopped
-
   mem0-api:
     build: ./api
     container_name: mem0-api
     ports:
-      - "0.0.0.0:8100:8000"
+      - 0.0.0.0:8100:8000
     environment:
       - MEM0_API_KEY=${MEM0_API_KEY}
       - ZAI_API_KEY=${ZAI_API_KEY}
@@ -27,13 +25,13 @@ services:
       - mem0-internal
       - shared-services
     restart: unless-stopped
-
 volumes:
-  qdrant-data:
-
+  qdrant-data: null
 networks:
   mem0-internal:
     driver: bridge
   shared-services:
     external: true
     name: shared-services
+  dokploy-network:
+    external: true
