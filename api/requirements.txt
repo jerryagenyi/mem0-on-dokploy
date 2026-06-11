@@ -1,4 +1,4 @@
 mem0ai
 fastapi
 uvicorn[standard]
-google-genai
+google-genai<2.0.0

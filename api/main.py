@@ -41,16 +41,38 @@ _config = {
 memory: Memory | None = None
 
 
+async def _wait_for_qdrant(host: str, port: int, timeout: int = 60) -> None:
+    """Block until Qdrant responds to /healthz. Avoids leaking Gemini
+    clients in Memory.from_config() retry loops when Qdrant isn't ready."""
+    url = f"http://{host}:{port}/healthz"
+    async with httpx.AsyncClient(timeout=3) as client:
+        deadline = asyncio.get_event_loop().time() + timeout
+        while asyncio.get_event_loop().time() < deadline:
+            try:
+                resp = await client.get(url)
+                if resp.status_code == 200:
+                    return
+            except (httpx.ConnectError, httpx.ReadError):
+                pass
+            await asyncio.sleep(2)
+        raise RuntimeError(f"Qdrant at {url} not healthy after {timeout}s")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global memory
-    for attempt in range(60):
+    # Wait for Qdrant first — avoids retry-loop hammering of Gemini client
+    qdrant_host = os.environ.get("QDRANT_HOST", "qdrant")
+    qdrant_port = int(os.environ.get("QDRANT_PORT", 6333))
+    await _wait_for_qdrant(qdrant_host, qdrant_port)
+
+    for attempt in range(6):
         try:
             memory = Memory.from_config(_config)
             break
         except Exception as exc:
-            if attempt == 59:
-                raise RuntimeError(f"Startup failed after 60 retries: {exc}") from exc
+            if attempt == 5:
+                raise RuntimeError(f"Startup failed after 6 retries: {exc}") from exc
             await asyncio.sleep(5)
     yield
 
