@@ -1,4 +1,4 @@
 mem0ai
 fastapi
 uvicorn[standard]
-ollama
+google-genai

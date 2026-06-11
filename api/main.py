@@ -8,7 +8,6 @@ from mem0 import Memory
 from pydantic import BaseModel
 
 _API_KEY = os.environ["MEM0_API_KEY"]
-_OLLAMA_BASE_URL = f"http://{os.environ.get('OLLAMA_HOST', 'ollama')}:{os.environ.get('OLLAMA_PORT', '11434')}"
 _ZAI_BASE_URL = "https://api.z.ai/api/coding/paas/v4"
 
 _config = {
@@ -18,7 +17,7 @@ _config = {
             "collection_name": "mem0",
             "host": os.environ.get("QDRANT_HOST", "qdrant"),
             "port": int(os.environ.get("QDRANT_PORT", 6333)),
-            "embedding_model_dims": 768,
+            "embedding_model_dims": 3072,
         },
     },
     "llm": {
@@ -30,32 +29,16 @@ _config = {
         },
     },
     "embedder": {
-        "provider": "ollama",
+        "provider": "gemini",
         "config": {
-            "model": "nomic-embed-text",
-            "ollama_base_url": _OLLAMA_BASE_URL,
+            "model": "models/gemini-embedding-001",
+            "embedding_dims": 3072,
+            "api_key": os.environ["GOOGLE_API_KEY"],
         },
     },
 }
 
 memory: Memory | None = None
-
-_MODELS = ["nomic-embed-text"]
-
-
-
-async def _ensure_models() -> None:
-    """Pull Ollama models via REST API if not already cached."""
-    async with httpx.AsyncClient(timeout=600) as client:
-        resp = await client.get(f"{_OLLAMA_BASE_URL}/api/tags")
-        cached = {m.get("name", "") for m in resp.json().get("models", [])}
-        for model in _MODELS:
-            if not any(c.startswith(model.split(":")[0]) for c in cached):
-                async with client.stream(
-                    "POST", f"{_OLLAMA_BASE_URL}/api/pull", json={"name": model}
-                ) as r:
-                    async for _ in r.aiter_lines():
-                        pass  # drain stream, model downloads in background
 
 
 @asynccontextmanager
@@ -63,7 +46,6 @@ async def lifespan(app: FastAPI):
     global memory
     for attempt in range(60):
         try:
-            await _ensure_models()
             memory = Memory.from_config(_config)
             break
         except Exception as exc:
