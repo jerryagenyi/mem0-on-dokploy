@@ -12,7 +12,8 @@ Copy the relevant block below into each agent's system prompt. Replace `{AGENT_I
 You have a persistent memory API. Use it to remember things across conversations.
 
 Endpoint:  http://localhost:8100
-Auth:      X-Api-Key: Z0AF4wpH9XwsvvBUHqc9lATzTg7ntDv559KlNLKRH4Q
+Auth:      X-Api-Key: $MEM0_API_KEY
+Load key: source ~/.hermes/.env  (never hardcode)
 agent_id:  {AGENT_ID}   ← replace with: onu / cih / ada / pa
 
 WHEN TO USE:
@@ -25,21 +26,21 @@ HOW TO CALL:
 
 # Search before responding
 curl -s "http://localhost:8100/memories/search?query=QUERY&agent_id={AGENT_ID}&limit=5" \
-  -H "X-Api-Key: Z0AF4wpH9XwsvvBUHqc9lATzTg7ntDv559KlNLKRH4Q"
+  -H "X-Api-Key: $MEM0_API_KEY"
 
 # Save something
 curl -s -X POST http://localhost:8100/memories \
-  -H "X-Api-Key: Z0AF4wpH9XwsvvBUHqc9lATzTg7ntDv559KlNLKRH4Q" \
+  -H "X-Api-Key: $MEM0_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"content": "WHAT YOU LEARNED", "agent_id": "{AGENT_ID}"}'
 
 # Get all your memories
 curl -s "http://localhost:8100/memories/{AGENT_ID}" \
-  -H "X-Api-Key: Z0AF4wpH9XwsvvBUHqc9lATzTg7ntDv559KlNLKRH4Q"
+  -H "X-Api-Key: $MEM0_API_KEY"
 
 # Delete a specific memory
 curl -s -X DELETE http://localhost:8100/memories/{MEMORY_ID} \
-  -H "X-Api-Key: Z0AF4wpH9XwsvvBUHqc9lATzTg7ntDv559KlNLKRH4Q"
+  -H "X-Api-Key: $MEM0_API_KEY"
 
 WHAT TO SAVE: user preferences, decisions, corrections, recurring tasks, anything
 the user says to remember.
@@ -47,10 +48,10 @@ the user says to remember.
 WHAT NOT TO SAVE: every message, transient task state, things already in your
 system prompt.
 
-MEMORY FORMAT RULES (non-negotiable):
+MEMORY FORMAT RULES:
 - Send pre-formatted content to the API — do NOT send raw paragraphs or conversation excerpts
 - Format your content as: "Subject → fact" before calling POST /memories
-- One fact per API call. Max 15 words.
+- One fact per API call. Keep content concise.
 - Examples: "Preference → prefers British English spellings" / "SSH port → kali runs on port 82"
 - Save: stable preferences, decisions, corrections, system facts
 - Never save: task state, session context, explanations, stale/time-bound info
@@ -67,7 +68,8 @@ MEMORY FORMAT RULES (non-negotiable):
 You have a persistent memory API. Use it to remember things across conversations.
 
 Endpoint:  http://100.123.6.36:8100
-Auth:      X-Api-Key: Z0AF4wpH9XwsvvBUHqc9lATzTg7ntDv559KlNLKRH4Q
+Auth:      X-Api-Key: $MEM0_API_KEY
+Load key: source ~/.hermes/.env  (never hardcode)
 agent_id:  forge
 
 WHEN TO USE:
@@ -80,21 +82,21 @@ HOW TO CALL:
 
 # Search before responding
 curl -s "http://100.123.6.36:8100/memories/search?query=QUERY&agent_id=forge&limit=5" \
-  -H "X-Api-Key: Z0AF4wpH9XwsvvBUHqc9lATzTg7ntDv559KlNLKRH4Q"
+  -H "X-Api-Key: $MEM0_API_KEY"
 
 # Save something
 curl -s -X POST http://100.123.6.36:8100/memories \
-  -H "X-Api-Key: Z0AF4wpH9XwsvvBUHqc9lATzTg7ntDv559KlNLKRH4Q" \
+  -H "X-Api-Key: $MEM0_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"content": "WHAT YOU LEARNED", "agent_id": "forge"}'
 
 # Get all your memories
 curl -s "http://100.123.6.36:8100/memories/forge" \
-  -H "X-Api-Key: Z0AF4wpH9XwsvvBUHqc9lATzTg7ntDv559KlNLKRH4Q"
+  -H "X-Api-Key: $MEM0_API_KEY"
 
 # Delete a specific memory
 curl -s -X DELETE http://100.123.6.36:8100/memories/{MEMORY_ID} \
-  -H "X-Api-Key: Z0AF4wpH9XwsvvBUHqc9lATzTg7ntDv559KlNLKRH4Q"
+  -H "X-Api-Key: $MEM0_API_KEY"
 
 WHAT TO SAVE: user preferences, decisions, corrections, recurring tasks, anything
 the user says to remember.
@@ -102,10 +104,10 @@ the user says to remember.
 WHAT NOT TO SAVE: every message, transient task state, things already in your
 system prompt.
 
-MEMORY FORMAT RULES (non-negotiable):
+MEMORY FORMAT RULES:
 - Send pre-formatted content to the API — do NOT send raw paragraphs or conversation excerpts
 - Format your content as: "Subject → fact" before calling POST /memories
-- One fact per API call. Max 15 words.
+- One fact per API call. Keep content concise.
 - Examples: "Preference → prefers British English spellings" / "SSH port → kali runs on port 82"
 - Save: stable preferences, decisions, corrections, system facts
 - Never save: task state, session context, explanations, stale/time-bound info
@@ -126,6 +128,4 @@ MEMORY FORMAT RULES (non-negotiable):
 
 Auth: all endpoints except `/health` require `X-Api-Key` header.
 
-Note: `POST /memories` uses GLM (glm-4.7-flash via z.ai) to extract what's worth
-remembering — typically 1–3 seconds. Search uses local embeddings (nomic-embed-text)
-and is near-instant.
+Note: `POST /memories` stores content verbatim (`infer=False` — no LLM extraction). Search uses Gemini embeddings and is near-instant. A 503 response means the save failed — surface this to the user.
