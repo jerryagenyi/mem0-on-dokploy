@@ -97,7 +97,19 @@ def health():
 
 @app.post("/memories", dependencies=[Depends(_auth)])
 def add_memory(req: AddRequest):
-    return memory.add(req.content, agent_id=req.agent_id)
+    try:
+        result = memory.add(req.content, agent_id=req.agent_id, infer=False)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={"error": "Memory save failed", "detail": str(exc)},
+        ) from exc
+    if isinstance(result, dict) and result.get("results") == []:
+        raise HTTPException(
+            status_code=503,
+            detail={"error": "Memory save returned empty results", "detail": str(result)},
+        )
+    return result
 
 
 # /memories/search must be defined before /memories/{agent_id} so FastAPI
